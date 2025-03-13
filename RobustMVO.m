@@ -1,4 +1,4 @@
-function x = RobustMVO(mu, Q,periodReturns,periodFactRet, x0)
+function x = RobustMVO(mu, Q, x0)
 
     % Use this function to implement your algorithmic asset management
     % strategy. You can modify this function, but you must keep the inputs
@@ -17,11 +17,11 @@ function x = RobustMVO(mu, Q,periodReturns,periodFactRet, x0)
 
     
     % Example: Use MVO to optimize our portfolio
-    n = size(periodReturns,2);
-    %n = size(Q,1);
-    %N = length(mu);
+    %n = size(periodReturns,2);
+    n = size(Q,1);
+    N = length(mu);
     % Number of observations;
-    N = size(periodReturns, 1);
+    %N = size(periodReturns, 1);
 
     % Calculate the factor expected excess return from historical data using
     % the geometric mean
