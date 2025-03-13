@@ -1,6 +1,6 @@
 %Risk-Return Tradeoff
 
-function x = RiskMVO(mu, Q,x0)
+function x = RiskMVO(mu, Q, periodReturns, x0)
     % periodReturns : (T x n) matrix of historical returns for n assets
     % periodFactRet : (T x k) matrix of factor returns (not used here, but
     %                 you might use it if you build Q or mu differently)
@@ -9,8 +9,8 @@ function x = RiskMVO(mu, Q,x0)
     %x_opt = testing_optimization(periodReturns);
     % 1) Estimate the mean returns and covariance (Q) from historical data:
     % Replace NaN with 0
-    %mu = mean(periodReturns)';  % n x 1
-    %Q  = cov(periodReturns);    % n x n
+    %mu_ = mean(periodReturns)';  % n x 1
+    %Q_  = cov(periodReturns);    % n x n
 
     mu(isnan(mu)) = 0; % Replace NaNs in expected returns
     Q(isnan(Q)) = 0; % Replace NaNs in covariance matrix
@@ -19,9 +19,9 @@ function x = RiskMVO(mu, Q,x0)
 
     % 3) Convert x^T Q x - lambda*mu^T x  into quadprog form:
     f = -lambda*mu;    % so that f'*x = -lambda*mu'*x
-
+    n = size(periodReturns, 2);
     % 4) Define constraints: sum(x) = 1, x >= 0
-    Aeq = ones(1, length(mu));
+    Aeq = ones(1, n);
     beq = 1;
 
     % 5) Solve via quadprog
