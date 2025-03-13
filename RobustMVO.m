@@ -18,7 +18,8 @@ function x = RobustMVO(mu, Q,periodReturns,periodFactRet, x0)
     
     % Example: Use MVO to optimize our portfolio
     n = size(periodReturns,2);
-
+    %n = size(Q,1);
+    %N = length(mu);
     % Number of observations;
     N = size(periodReturns, 1);
 
@@ -39,10 +40,12 @@ function x = RobustMVO(mu, Q,periodReturns,periodFactRet, x0)
 
     % Convert back to geometric mean return
     %targetRet = exp(meanLogRet) - 1;
-    x0 = ones(n, 1) / n;
+    %x0 = ones(n, 1) / n;
 
     %parameter calcs
-    theta = ((1/N)*diag(Q).*eye(n)).^0.5; %calculation of theta
+    %theta = ((1/N)*diag(Q).*eye(n)).^0.5; %calculation of theta
+    theta = sqrtm(Q / N); % Proper uncertainty modeling
+
     alpha = 0.9; %confidence level, so this is with 90% confidence
     epsilon = sqrt(chi2inv(alpha,n)); %calculation of epsilon (size of uncertainty set). uses chi^2 distribution 
 
@@ -50,13 +53,9 @@ function x = RobustMVO(mu, Q,periodReturns,periodFactRet, x0)
 
 
     %use fmincon
-    fun = @(x) lambda*(x'*Q*x)-mu' * x;
+    fun = @(x) lambda*(x'*Q*x)-mu' * x - epsilon * norm(theta * x, 2);
     
-    function [c, ceq] = robustConstraint(x)
-    % c(x) <= 0 defines inequality constraints
-        c = - (mu' * x - epsilon * norm(theta .* x, 2));
-        ceq = []; 
-    end
+ 
 
     x0 = 1/n.*(ones(n,1));
     A = [];
@@ -64,14 +63,13 @@ function x = RobustMVO(mu, Q,periodReturns,periodFactRet, x0)
     Aeq = ones(1,n);
     beq = 1;
 
-    nonlcon = @(x) robustConstraint(x, mu, theta, epsilon, targetRet);
+    %nonlcon = @(x) robustConstraint(x, mu, theta, epsilon, targetRet);
     %lb = zeros(n,1); if you have this or don't, asset weights are still
     %positive
     ub = [];
     options = optimoptions('fmincon', 'Algorithm', 'sqp', 'Display', 'iter');
-    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, @robustConstraint,options);
-    x
+    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options);
+    %x
 
 
    end
-    
