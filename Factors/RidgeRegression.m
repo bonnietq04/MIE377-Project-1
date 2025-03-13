@@ -1,6 +1,7 @@
-function selectedFactors = RidgeRegression(returns, factRet, threshold)
+function selectedFactors = RidgeRegression(returns, factRet)
     % Ridge Regression with automatic lambda selection and factor selection based on coefficient magnitude
-    
+    threshold = 0.1 * max(abs(ridgeCoeffs(2:end)));
+    selectedFactors = find(abs(ridgeCoeffs(2:end)) > threshold);
     [n, p] = size(factRet); % n = observations, p = factors
     
     % Data matrix with intercept
