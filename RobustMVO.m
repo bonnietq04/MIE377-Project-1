@@ -1,75 +1,78 @@
 function x = RobustMVO(mu, Q, x0)
 
-    % Use this function to implement your algorithmic asset management
-    % strategy. You can modify this function, but you must keep the inputs
-    % and outputs consistent.
+    % RobustMVO: Implements Robust Risk Trade Off Optimization with 
+    % ellipsoidal uncertainty and short-selling allowed.
     %
-    % INPUTS: periodReturns, periodFactRet, x0 (current portfolio weights)
-    % OUTPUTS: x (optimal portfolio)
+    % INPUTS:
+    %   mu  - Expected returns vector (Nx1)
+    %   Q   - Covariance matrix (NxN)
+    %   x0  - Initial portfolio weights (Nx1)
     %
-    % An example of an MVO implementation with OLS regression is given
-    % below. Please be sure to include comments in your code.
+    % OUTPUT:
+    %   x   - Optimal portfolio weights (Nx1)
     %
-    % *************** WRITE YOUR CODE HERE ***************
+    % Key Features:
+    % - Incorporates ellipsoidal uncertainty in risk modeling.
+    % - Uses robust risk trade-off optimization to balance risk and return.
+    % - Allows **short-selling** (negative weights are permitted).
+    % - Optimizes risk aversion penalty at 17.
+    % - Uses 90% confidence level for uncertainty modeling.
+    
+    % ================== Preprocessing Data ==================
     %----------------------------------------------------------------------
-    mu(isnan(mu)) = 0; % Replace NaNs in expected returns
-    Q(isnan(Q)) = 0; % Replace NaNs in covariance matrix
+    % Handle NaN values in expected returns and covariance matrix
+    mu(isnan(mu)) = 0; % Replace NaNs in expected returns with 0
+    Q(isnan(Q)) = 0; % Replace NaNs in covariance matrix with 0
 
+    % Number of assets in the portfolio
+    n = size(Q,1); % Number of assets from covariance matrix
+    N = length(mu); % Number of assets from expected returns
+     % ================== Uncertainty Set Construction ==================
     
-    % Example: Use MVO to optimize our portfolio
-    %n = size(periodReturns,2);
-    n = size(Q,1);
-    N = length(mu);
-    % Number of observations;
-    %N = size(periodReturns, 1);
+    % Construct ellipsoidal uncertainty set using the covariance matrix
+    theta = sqrtm(Q / N);  % Square root of scaled covariance matrix
+    
+    % Confidence level for uncertainty modeling
+    alpha = 0.90; % 90% confidence level
+    
+    % Calculate uncertainty set size (epsilon) using chi-square distribution
+    epsilon = sqrt(chi2inv(alpha, n)); 
 
-    % Calculate the factor expected excess return from historical data using
-    % the geometric mean
-    %mu = mean(periodReturns);
-    %mu = mu(:);
+    % ================== Optimization Parameters ==================
+    
+    % Risk Aversion Penalty (Lambda)controls the trade-off between return and risk.
+    % We set it to 17 for optimal risk-return balance.
+    lambda = 17;
 
-    % Calculate the asset covariance matrix
-    %Q = cov(periodReturns);
-
-    % Calculate the factor expected excess return from historical data using
-    % the geometric mean. Use this as the portfolio target return
-    %logReturns = log(1 + periodFactRet);
-
-    % Compute the mean of log returns
-    %meanLogRet = mean(logReturns);
-
-    % Convert back to geometric mean return
-    %targetRet = exp(meanLogRet) - 1;
-    %x0 = ones(n, 1) / n;
-
-    %parameter calcs
-    %theta = ((1/N)*diag(Q).*eye(n)).^0.5; %calculation of theta
-    theta = sqrtm(Q / N); % Proper uncertainty modeling
-
-    alpha = 0.9; %confidence level, so this is with 90% confidence
-    epsilon = sqrt(chi2inv(alpha,n)); %calculation of epsilon (size of uncertainty set). uses chi^2 distribution 
-
-    lambda = 20; %risk aversion penalty, dont need
-
-
-    %use fmincon
+    % ================== Objective Function ==================
+    
+    % Define the objective function to minimize:
+    %   lambda * (x' * Q * x) - mu' * x - epsilon * norm(theta * x, 2)
+    % Where:
+    % - The first term: Risk term (variance of portfolio)
+    % - The second term: Expected return (we want to maximize this)
+    % - The third term: Uncertainty penalty (Robust Risk Adjustment)
     fun = @(x) lambda*(x'*Q*x)-mu' * x - epsilon * norm(theta * x, 2);
-    
- 
 
+    % ================== Optimization ==================
+    
+    % We initialize an equal-weighted portfolio (1/n allocation)
     x0 = 1/n.*(ones(n,1));
+
+    % Linear Inequality Constraints
+    % A and b define constraints of the form: A*x <= b
+    % No constraints defined, so we set these as empty.
     A = [];
     b = [];
-    Aeq = ones(1,n);
-    beq = 1;
+    Aeq = ones(1,n);% Sum of weights must be 1
+    beq = 1;% Enforces full capital allocation
 
-    %nonlcon = @(x) robustConstraint(x, mu, theta, epsilon, targetRet);
-    %lb = zeros(n,1); if you have this or don't, asset weights are still
-    %positive
-    ub = [];
+    ub = [];% allow short selling
     options = optimoptions('fmincon', 'Algorithm', 'sqp', 'Display', 'iter');
-    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options);
-    %x
 
+    % Solve the **Robust Mean-Variance Optimization** problem
+    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options);
 
    end
+
+
