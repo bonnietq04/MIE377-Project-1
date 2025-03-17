@@ -70,7 +70,7 @@ function x = RobustMVO(mu, Q, x0)
     ub = [];
     options = optimoptions('fmincon', 'Algorithm', 'sqp', 'Display', 'iter');
 
-    % Solve the **Robust Mean-Variance Optimization** problem
+    % Solve the RobustMVO Problem 
     x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options); % allow short selling 
 
    end
