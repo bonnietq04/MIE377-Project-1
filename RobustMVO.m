@@ -67,11 +67,11 @@ function x = RobustMVO(mu, Q, x0)
     Aeq = ones(1,n);% Sum of weights must be 1
     beq = 1;% Enforces full capital allocation
 
-    ub = [];% allow short selling
+    ub = [];
     options = optimoptions('fmincon', 'Algorithm', 'sqp', 'Display', 'iter');
 
     % Solve the **Robust Mean-Variance Optimization** problem
-    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options);
+    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options); % allow short selling 
 
    end
 
