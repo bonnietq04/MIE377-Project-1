@@ -72,6 +72,10 @@ function x = Project2_Function(periodReturns, periodFactRet, riskFree, x0) % add
     % Example: Use MVO to optimize our portfolio
     x = RiskParity(mu, Q);
 
+    % x = CVaR_Optimization(returns, factRet, 0.95);
+    %if you want to use factor model, replace returns with mu
+    
+
     %----------------------------------------------------------------------
 end
 
