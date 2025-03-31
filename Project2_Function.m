@@ -1,4 +1,4 @@
-function x = Project2_Function(periodReturns, periodFactRet, x0)
+function x = Project2_Function(periodReturns, periodFactRet, riskFree, x0) % add riskFree in main file as well 
 
 
     % Use this function to implement your algorithmic asset management
@@ -18,6 +18,11 @@ function x = Project2_Function(periodReturns, periodFactRet, x0)
     % Define estimation period (most recent 5 years for calibration)
     returns = periodReturns(max(1,end-59):end,:);
     factRet = periodFactRet(max(1,end-59):end,:);
+    % UNcomment to run sharpe ratio
+    %rfWindow = riskFree(max(1,end-35):end,:);
+    %r_f = mean(rfWindow, 'omitnan');
+    %r_f = table2array(r_f)
+
 
     %most recent 3 years
     %returns = periodReturns(end-35:end,:);
