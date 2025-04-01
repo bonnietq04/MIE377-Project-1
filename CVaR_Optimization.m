@@ -37,11 +37,11 @@ function x = CVaR_Optimization(rets, facRets, alpha)
     % on the LHS of the inequality.
     
     % Define the lower and upper bounds to our portfolio
-    lb = [-45 * ones(n, 1); zeros(S,1); -Inf];  % allow shorting up to -100%
-    ub = [ 45 * ones(n, 1);  Inf(S,1);  Inf];%} % allow long positions up to 200%
+    lb = [zeros(n, 1); zeros(S,1); -Inf]; 
+    %lb = [-45 * ones(n, 1); zeros(S,1); -Inf];  % allow shorting up to -100%
+    %ub = [ 45 * ones(n, 1);  Inf(S,1);  Inf];%} % allow long positions up to 200%
     %lb = [-Inf(n, 1); zeros(S,1); -Inf];
-    %ub = [];
-
+    ub = [];
 
     
     % Define the inequality constraint matrices A and b
