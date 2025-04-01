@@ -58,7 +58,7 @@ function x = RobustMVO(mu, Q, x0)
     
     % We initialize an equal-weighted portfolio (1/n allocation)
     x0 = 1/n.*(ones(n,1));
-
+    
     % Linear Inequality Constraints
     % A and b define constraints of the form: A*x <= b
     % No constraints defined, so we set these as empty.
@@ -67,12 +67,13 @@ function x = RobustMVO(mu, Q, x0)
     Aeq = ones(1,n);% Sum of weights must be 1
     beq = 1;% Enforces full capital allocation
 
-    ub = [];
+    lb = zeros(n,1);% disallow short selling
     options = optimoptions('fmincon', 'Algorithm', 'sqp', 'Display', 'iter');
 
-    % Solve the RobustMVO Problem 
-    x = fmincon(fun,x0,A,b,Aeq,beq,[], ub, [],options); % allow short selling 
+    % Solve the **Robust Mean-Variance Optimization** problem
+    x = fmincon(fun,x0,A,b,Aeq,beq,lb, [], [],options);
 
    end
+
 
 
