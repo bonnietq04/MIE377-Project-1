@@ -1,4 +1,4 @@
-function x = Project2_Function(periodReturns, periodFactRet, riskFree, x0) % add riskFree in main file as well 
+function x = Project2_Function(periodReturns, periodFactRet, x0) % add riskFree in main file as well 
 
 
     % Use this function to implement your algorithmic asset management
