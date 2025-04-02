@@ -60,20 +60,39 @@ function x = Project2_Function(periodReturns, periodFactRet, riskFree, x0) % add
     %Q  = cov(periodReturns);    % n x n
 
     %UNCOMMENT TO RUN PCA
-    if exist('PCA_setting.mat', 'file')
-    S = load('PCA_setting.mat'); 
-    PCA_numComponents = S.PCA_numComponents;
-    else
-        PCA_numComponents = 4; % default if not set
+    [T, n_assets] = size(returns);
+
+    sharpeRatios = zeros(1, n_assets);
+
+    % Loop through PCA components to find optimal number of components
+    for p = 1:n_assets
+        [mu_temp, Q_temp] = PCA(returns, p);
+
+        % Obtain temporary portfolio weights using Risk Parity
+        x_temp = RiskParity(mu_temp,Q_temp);
+
+        % Calculate cumulative portfolio value starting at 1
+        portfValue_temp = cumprod([1; returns * x_temp + 1]);
+
+        % Calculate portfolio returns directly (no r_f)
+        portfRets_temp = portfValue_temp(2:end) ./ portfValue_temp(1:end-1) - 1;
+
+        % Sharpe ratio consistent with main script (no rf subtraction here)
+        sharpeRatios(p) = (geomean(portfRets_temp + 1) - 1) / std(portfRets_temp);
     end
 
-    [mu, Q] = PCA(returns, PCA_numComponents);   
+    % Optimal PCA components (highest Sharpe)
+    [~, optimal_p] = max(sharpeRatios);
 
-    % Example: Use MVO to optimize our portfolio
-    x = RiskParity(mu, Q);
+
+    % Final PCA estimation with optimal p
+    [mu, Q] = PCA(returns, optimal_p);
 
     % x = CVaR_Optimization(returns, factRet, 0.95);
     %if you want to use factor model, replace returns with mu
+
+    % Final weights using Risk Parity
+    x = RiskParity(mu,Q);
     
 
     %----------------------------------------------------------------------
